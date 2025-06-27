@@ -6,6 +6,10 @@ use crate::db::HabitDatabase;
 
 #[derive(Parser, Default, Debug)]
 pub struct Cli {
+    /// Path to the data file
+    #[arg(long, short = 'd', default_value = "habits.json")]
+    pub data_path: String,
+
     #[command(subcommand)]
     command: Option<Commands>,
 }

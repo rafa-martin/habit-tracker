@@ -15,9 +15,9 @@ use crate::db::{
 };
 
 fn main() -> Result<(), String> {
-    let mut db = FileDatabase::new("habits.json");
+    let args = Cli::parse();
+    let mut db = FileDatabase::new(&args.data_path);
     db.init().map_err(|e| e.to_string())?;
-
-    run(Cli::parse(), &mut db).map_err(|e| e.to_string())?;
+    run(args, &mut db).map_err(|e| e.to_string())?;
     Ok(())
 }
