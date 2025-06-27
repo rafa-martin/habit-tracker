@@ -13,7 +13,7 @@ pub struct Cli {
 #[derive(Subcommand, Debug)]
 enum Commands {
     /// Add an habit or task
-    Add { name: Option<String> },
+    Add { name: String },
 
     /// Mark an habit or task as done
     Done { id: u32 },
@@ -30,13 +30,7 @@ enum Commands {
 
 pub fn run<T: HabitDatabase>(args: Cli, db: &mut T) -> Result<(), String> {
     match args.command {
-        Some(Commands::Add { name }) => {
-            if let Some(name) = name {
-                add_command(db, &name).map_err(|e| e.to_string())
-            } else {
-                Err("Task name is required".to_string())
-            }
-        }
+        Some(Commands::Add { name }) => add_command(db, &name).map_err(|e| e.to_string()),
         Some(Commands::Done { id }) => done_command(db, id).map_err(|e| e.to_string()),
         Some(Commands::List) => list_command(db).map_err(|e| e.to_string()),
         Some(Commands::Today) => today_command(db).map_err(|e| e.to_string()),
