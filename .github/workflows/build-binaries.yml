@@ -12,24 +12,42 @@ jobs:
     strategy:
       matrix:
         include:
-          - target: aarch64-unknown-linux-musl
-          - target: aarch64-unknown-linux-gnu
-          - target: x86_64-unknown-linux-musl
-          - target: x86_64-unknown-linux-gnu
-
-    runs-on: ubuntu-latest
+          - os: ubuntu-latest   # Linux (glibc)
+            cross: true
+            target: x86_64-unknown-linux-gnu
+          - os: ubuntu-latest   # Linux (static MUSL)
+            cross: true
+            target: x86_64-unknown-linux-musl
+          - os: ubuntu-latest   # Linux (arm64)
+            cross: true
+            target: aarch64-unknown-linux-gnu
+          - os: ubuntu-latest   # Linux (arm64 static MUSL)
+            cross: true
+            target: aarch64-unknown-linux-musl
+          - os: windows-latest
+            cross: false
+            target: x86_64-pc-windows-msvc
+          - os: macos-latest
+            cross: false
+            target: x86_64-apple-darwin
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
-      - uses: actions-rs/toolchain@v1
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           toolchain: stable
-          profile: minimal
           target: ${{ matrix.target }}
-          override: true
+          cache: true
       - name: Install cross
+        if: ${{ matrix.cross }}
         run: cargo install cross --git https://github.com/cross-rs/cross
       - name: Build project
-        run: cross build --target ${{ matrix.target }} --release
+        run: |
+          if [ "${{ matrix.cross }}" = "true" ]; then
+            cross build --target ${{ matrix.target }} --release
+          else
+            cargo build --release --target ${{ matrix.target }} --locked
+          fi
       - name: Upload binary
         uses: actions/upload-artifact@v4
         with:
