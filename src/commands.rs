@@ -1,14 +1,13 @@
-use crate::db::{FileDatabase};
-use chrono::Local;
+use crate::db::{HabitDatabase};
 
-pub fn add_command(db: &mut FileDatabase, name: &String) -> Result<(), std::io::Error> {
+pub fn add_command<T: HabitDatabase>(db: &mut T, name: &String) -> Result<(), std::io::Error> {
     let data = db.get_mut_data()?;
     let id = data.add_task(name);
     println!("Added task as '{}' with ID {}.", name, id);
     Ok(())
 }
 
-pub fn done_command(db: &mut FileDatabase, id: u32) {
+pub fn done_command<T: HabitDatabase>(db: &mut T, id: u32) {
     let data = db.get_mut_data();
     if data.is_err() {
         eprintln!("Error accessing database: {}", data.err().unwrap());
@@ -17,7 +16,7 @@ pub fn done_command(db: &mut FileDatabase, id: u32) {
     let data = data.unwrap();
 
     // Mark the task as done for today
-    match data.mark_task_done(id, Local::now()) {
+    match data.mark_task_done(id, chrono::Local::now()) {
         Ok(_) => println!("Task with ID {} marked as done.", id),
         Err(e) => {
             eprintln!("Error marking task as done: {}", e);
@@ -25,7 +24,7 @@ pub fn done_command(db: &mut FileDatabase, id: u32) {
     }
 }
 
-pub fn list_command(db: &mut FileDatabase) -> Result<(), std::io::Error> {
+pub fn list_command<T: HabitDatabase>(db: &mut T) -> Result<(), std::io::Error> {
     let data = db.get_data()?;
     println!("Listing items:");
     for task in data.tasks.iter() {
@@ -34,7 +33,7 @@ pub fn list_command(db: &mut FileDatabase) -> Result<(), std::io::Error> {
     Ok(())
 }
 
-pub fn stats_command(db: &mut FileDatabase) -> Result<(), std::io::Error> {
+pub fn stats_command<T: HabitDatabase>(db: &mut T) -> Result<(), std::io::Error> {
     let task_str_len = 20; // Length of the task name column
     let days = 7; // Number of days to show in the statistics
     let data = db.get_data()?;
@@ -65,7 +64,7 @@ pub fn stats_command(db: &mut FileDatabase) -> Result<(), std::io::Error> {
     Ok(())
 }
 
-pub fn today_command(db: &mut FileDatabase) -> Result<(), std::io::Error> {
+pub fn today_command<T: HabitDatabase>(db: &mut T) -> Result<(), std::io::Error> {
     let data = db.get_data()?;
     let today = chrono::Local::now();
 

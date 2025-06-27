@@ -1,8 +1,6 @@
 use clap::Parser;
 use clap::Subcommand;
 
-use crate::db::FileDatabase;
-
 use crate::commands::{
     add_command,
     done_command,
@@ -10,6 +8,7 @@ use crate::commands::{
     stats_command,
     today_command,
 };
+use crate::db::HabitDatabase;
 
 #[derive(Parser,Default,Debug)]
 pub struct Cli {
@@ -35,7 +34,7 @@ enum Commands {
     Stats,
 }
 
-pub fn run(args: Cli, db: &mut FileDatabase) {
+pub fn run<T: HabitDatabase>(args: Cli, db: &mut T) {
     match args.command {
         Some(Commands::Add { name }) => {
             if let Some(name) = name {

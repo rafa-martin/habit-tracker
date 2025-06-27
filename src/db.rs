@@ -154,13 +154,20 @@ mod tests {
     }
 }
 
+
+pub trait HabitDatabase
+{
+    fn init(&mut self) -> Result<(), std::io::Error>;
+    fn get_data(&self) -> Result<&Data, std::io::Error>;
+    fn get_mut_data(&mut self) -> Result<&mut Data, std::io::Error>;
+}
+
 pub struct FileDatabase{
     filename: String,
     initialized: bool,
     data: Data,
 }
 
-#[allow(dead_code)]
 impl FileDatabase {
     pub fn new(filename: &str) -> Self {
         FileDatabase {
@@ -168,17 +175,6 @@ impl FileDatabase {
             initialized: false,
             data: Data::new(),
         }
-    }
-
-    pub fn init(&mut self) -> Result<(), std::io::Error> {
-        if !self.initialized {
-            if std::fs::metadata(&self.filename).is_err() {
-                self.write()?;
-            } else {
-                self.read()?;
-            }
-        }
-        Ok(())
     }
 
     fn read(&mut self) -> Result<(), std::io::Error> {
@@ -195,8 +191,21 @@ impl FileDatabase {
         self.initialized = true;
         Ok(())
     }
+}
 
-    pub fn get_data(&self) -> Result<&Data, std::io::Error> {
+impl HabitDatabase for FileDatabase {
+    fn init(&mut self) -> Result<(), std::io::Error> {
+        if !self.initialized {
+            if std::fs::metadata(&self.filename).is_err() {
+                self.write()?;
+            } else {
+                self.read()?;
+            }
+        }
+        Ok(())
+    }
+
+    fn get_data(&self) -> Result<&Data, std::io::Error> {
         if !self.initialized {
             return Err(std::io::Error::new(
                 std::io::ErrorKind::Other,
@@ -206,7 +215,7 @@ impl FileDatabase {
         Ok(&self.data)
     }
 
-    pub fn get_mut_data(&mut self) -> Result<&mut Data, std::io::Error> {
+    fn get_mut_data(&mut self) -> Result<&mut Data, std::io::Error> {
         if !self.initialized {
             return Err(std::io::Error::new(
                 std::io::ErrorKind::Other,
