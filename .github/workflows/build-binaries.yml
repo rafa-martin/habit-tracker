@@ -33,11 +33,12 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
-      - uses: actions-rust-lang/setup-rust-toolchain@v1
+      - uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
+          profile: minimal
           target: ${{ matrix.target }}
-          cache: false
+          override: true
       - name: Install cross
         if: ${{ matrix.cross }}
         run: cargo install cross --git https://github.com/cross-rs/cross
