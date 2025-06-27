@@ -10,13 +10,13 @@ jobs:
       matrix:
         include:
           - os: ubuntu-latest   # Linux (glibc)
-            toolchain: x86_64-unknown-linux-gnu
+            target: x86_64-unknown-linux-gnu
           - os: ubuntu-latest   # Linux (static MUSL)
-            toolchain: x86_64-unknown-linux-musl
+            target: x86_64-unknown-linux-musl
           - os: ubuntu-latest   # Linux (arm64)
-            toolchain: aarch64-unknown-linux-gnu
+            target: aarch64-unknown-linux-gnu
           - os: ubuntu-latest   # Linux (arm64 static MUSL)
-            toolchain: aarch64-unknown-linux-musl
+            target: aarch64-unknown-linux-musl
           # - os: windows-latest
           #   target: x86_64-pc-windows-msvc
           # - os: macos-latest
@@ -24,21 +24,22 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
-      - run: rustup update ${{ matrix.toolchain }} && rustup default ${{ matrix.toolchain }}
-      - run: cargo build --release --verbose --locked
+      - run: rustup update stable && rustup default stable
+      - run: rustup target add ${{ matrix.target }}
+      - run: cargo build --release --locked --verbose --target ${{ matrix.target }}
       - name: Package
         shell: bash
         run: |
           BIN_NAME=habit-tracker
-          cd target/${{ matrix.toolchain }}/release
+          cd target/${{ matrix.target }}/release
           if [[ "${{ matrix.os }}" == windows-latest ]]; then
-            7z a ../../../${BIN_NAME}-${{ matrix.toolchain }}.zip ${BIN_NAME}.exe
+            7z a ../../../${BIN_NAME}-${{ matrix.target }}.zip ${BIN_NAME}.exe
           else
-            tar -czf ../../../${BIN_NAME}-${{ matrix.toolchain }}.tar.gz ${BIN_NAME}
+            tar -czf ../../../${BIN_NAME}-${{ matrix.target }}.tar.gz ${BIN_NAME}
           fi
       - uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.toolchain }}
+          name: ${{ matrix.target }}
           path: |
             *.zip
             *.tar.gz
