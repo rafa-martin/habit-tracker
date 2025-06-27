@@ -1,17 +1,23 @@
 mod cli;
 mod commands;
+mod config;
 mod db;
 
 use clap::Parser;
-use cli::{Cli};
-use cli::run;
+use cli::{
+    Cli,
+    run,
+};
 
-use crate::db::HabitDatabase;
+use crate::db::{
+    FileDatabase,
+    HabitDatabase,
+};
 
-fn main() {
-    let mut db = db::FileDatabase::new("habits.json");
-    if let Err(e) = db.init() {
-        eprintln!("Error reading database: {}", e);
-    }
-    run(Cli::parse(), &mut db);
+fn main() -> Result<(), String> {
+    let mut db = FileDatabase::new("habits.json");
+    db.init().map_err(|e| e.to_string())?;
+
+    run(Cli::parse(), &mut db).map_err(|e| e.to_string())?;
+    Ok(())
 }

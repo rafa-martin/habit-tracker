@@ -1,6 +1,8 @@
-use serde::{Deserialize, Serialize};
 use chrono::DateTime;
 use chrono::Local;
+use serde::{Deserialize, Serialize};
+
+use std::collections::{HashMap, HashSet};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct TaskDescription {
@@ -17,7 +19,7 @@ pub struct Data {
     pub tasks: Vec<TaskDescription>,
 
     /// Map completion by date
-    pub completion: std::collections::HashMap<String, Vec<u32>>,
+    pub completion: HashMap<String, HashSet<u32>>,
 }
 
 impl Data {
@@ -32,7 +34,10 @@ impl Data {
     pub fn add_task(&mut self, name: &str) -> u32 {
         let id = self.next_id;
         self.next_id += 1;
-        self.tasks.push(TaskDescription { id, name: name.to_string() });
+        self.tasks.push(TaskDescription {
+            id,
+            name: name.to_string(),
+        });
         id
     }
 
@@ -61,9 +66,7 @@ impl Data {
     fn add_completion(&mut self, id: u32, date: DateTime<Local>) {
         let date_str = date.format("%Y-%m-%d").to_string();
         let completed_tasks = self.completion.entry(date_str).or_default();
-        if !completed_tasks.contains(&id) {
-            completed_tasks.push(id);
-        }
+        completed_tasks.insert(id);
     }
 }
 
@@ -154,15 +157,13 @@ mod tests {
     }
 }
 
-
-pub trait HabitDatabase
-{
+pub trait HabitDatabase {
     fn init(&mut self) -> Result<(), std::io::Error>;
     fn get_data(&self) -> Result<&Data, std::io::Error>;
     fn get_mut_data(&mut self) -> Result<&mut Data, std::io::Error>;
 }
 
-pub struct FileDatabase{
+pub struct FileDatabase {
     filename: String,
     initialized: bool,
     data: Data,
