@@ -31,7 +31,7 @@ jobs:
           cache:    true
           components: clippy
       - name: Cargo build
-        run: cargo build --release --locked --target ${{ matrix.target }}
+        run: cargo build --release --locked --target ${{ matrix.target }} --verbose
       - name: Package
         shell: bash
         run: |
