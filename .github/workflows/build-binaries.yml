@@ -43,6 +43,7 @@ jobs:
         if: ${{ matrix.cross }}
         run: cargo install cross --git https://github.com/cross-rs/cross
       - name: Build project
+        shell: bash
         run: |
           if [ "${{ matrix.cross }}" = "true" ]; then
             cross build --target ${{ matrix.target }} --release
