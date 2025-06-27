@@ -28,7 +28,7 @@ jobs:
         with:
           toolchain: stable
           target:   ${{ matrix.target }}
-          cache:    true
+          cache:    false
           components: clippy
       - name: Cargo build
         run: cargo build --release --locked --target ${{ matrix.target }} --verbose
