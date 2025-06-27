@@ -45,14 +45,24 @@ jobs:
       - name: Build project
         shell: bash
         run: |
-          if [ "${{ matrix.cross }}" = "true" ]; then
+          if [[ "${{ matrix.cross }}" == "true" ]]; then
             cross build --target ${{ matrix.target }} --release
           else
             cargo build --release --target ${{ matrix.target }} --locked
           fi
-      - name: Upload binary
-        uses: actions/upload-artifact@v4
+      - name: Package
+        shell: bash
+        run: |
+          BIN_NAME=habit-tracker
+          cd target/${{ matrix.target }}/release
+          if [[ "${{ matrix.os }}" == windows-latest ]]; then
+            7z a ../../../${BIN_NAME}-${{ matrix.target }}.zip ${BIN_NAME}.exe
+          else
+            tar -czf ../../../${BIN_NAME}-${{ matrix.target }}.tar.gz ${BIN_NAME}
+          fi
+      - uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.target }}-${{ github.ref_name }}
+          name: ${{ matrix.target }}
           path: |
-            target/${{ matrix.target }}/release/${{ env.BINARY_NAME }}
+            *.zip
+            *.tar.gz
